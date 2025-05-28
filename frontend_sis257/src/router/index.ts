@@ -42,6 +42,11 @@ const router = createRouter({
           path: 'ventas',
           name: 'ventas',
           component: () => import('@/views/cruds/VentaView.vue')
+        },
+        {
+          path: 'ventas/registrar',
+          name: 'registrar-venta',
+          component: () => import('@/views/cruds/RegistrarVentaView.vue')
         }
       ]
     }

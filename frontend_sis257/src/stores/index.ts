@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { getTokenFromLocalStorage } from "@/helpers";
 import http from "@/plugins/axios";
 import router from "@/router";
+import Swal from 'sweetalert2';
 
 const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -25,6 +26,16 @@ const useAuthStore = defineStore("auth", {
     logout() {
       localStorage.clear();
       this.$reset();
+      Swal.fire({
+        icon: "success",
+        title: "Sesión cerrada",
+        text: "Has cerrado sesión correctamente.",
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        position: "top-end",
+        toast: true
+      });
       router.push("/");
     }
   }
