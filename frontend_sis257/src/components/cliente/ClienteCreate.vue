@@ -22,7 +22,7 @@
       </div>
       <div class="field">
         <label for="email" class="form-label">E-mail</label>
-        <InputMask id="email" v-model="cliente.email" class="form-input" mask="*@*.*" placeholder="ejemplo@gmail.com"
+        <InputText id="email" v-model="cliente.email" class="form-input" placeholder="ejemplo@gmail.com"
           autocomplete="off" required />
       </div>
     </div>
@@ -40,6 +40,13 @@ import { ref, watch, reactive } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
+import InputMask from 'primevue/inputmask'
+import http from '../../plugins/axios'
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast'
+
+const toast = useToast()
+const ENDPOINT = '/clientes'
 
 const props = defineProps<{
   visible: boolean
@@ -88,8 +95,31 @@ watch(
 const loading = ref(props.loading ?? false)
 const isEdit = props.isEdit ?? false
 
-function handleSave() {
-  emit('save', { ...cliente })
+async function handleSave() {
+  loading.value = true
+  try {
+    const body = {
+      nombres: cliente.nombres,
+      apellidos: cliente.apellidos,
+      direccion: cliente.direccion,
+      telefono: cliente.telefono,
+      email: cliente.email
+    }
+    await http.post(ENDPOINT, body)
+    emit('save', { ...cliente })
+    Object.assign(cliente, { nombres: '', apellidos: '', direccion: '', telefono: '', email: '' })
+    visible.value = false
+  } catch (error: any) {
+    console.error('Error al guardar el cliente:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.response?.data?.message || 'No se pudo guardar el cliente',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 function onClose() {

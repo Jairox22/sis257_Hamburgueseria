@@ -11,4 +11,13 @@ export const CARGO_OPTIONS = [
     { value: 'repartidor', label: 'Repartidor' }
 ];
 
+export const METODOS_PAGO = [
+  { label: 'Efectivo', value: 'efectivo' },
+  { label: 'Tarjeta', value: 'tarjeta' },
+  { label: 'Transferencia', value: 'transferencia' },
+  { label: 'Cotización', value: 'cotización' },
+  { label: 'Otro', value: 'otro' }
+];
+
 export const DEFAULT_PASSWORD = 'hola2025!';
+
