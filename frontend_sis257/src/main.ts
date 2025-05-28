@@ -30,6 +30,7 @@ app.component('Toast', Toast)
 app.use(PrimeVue, {
   theme: {
     options: {
+// eslint-disable-next-line no-constant-binary-expression
         darkModeSelector: false || 'none',
     },
     preset: Aura

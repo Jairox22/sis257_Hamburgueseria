@@ -46,7 +46,9 @@ const router = createRouter({
         {
           path: 'ventas/registrar',
           name: 'registrar-venta',
-          component: () => import('@/views/cruds/RegistrarVentaView.vue')
+          // Asegúrate de que el archivo exista en la ruta correcta o corrige la ruta de importación
+          // Por ejemplo, si el archivo se llama RegistrarVenta.vue:
+          component: () => import('@/views/cruds/RegistrarVenta.vue')
         }
       ]
     }
