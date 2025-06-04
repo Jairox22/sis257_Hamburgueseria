@@ -43,7 +43,7 @@ defineProps({
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-burger.jpg" alt="Imagen">
+                      <img src="../../assets/img/menu-burger1.jpg" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>Hamburguesa Doble</span> <strong>13.00 Bs</strong></h3>
