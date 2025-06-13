@@ -137,7 +137,7 @@ defineProps({
                 <div class="col-lg-7 col-md-12">
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
+                      <img src="../../assets/img/jugo4.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>REFRESCO DEL VALLE</span> <strong>12.00 Bs</strong></h3>
@@ -145,7 +145,7 @@ defineProps({
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
+                      <img src="../../assets/img/jugo1.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>LIMONADA MENTA</span> <strong>11.00 Bs</strong></h3>
@@ -161,7 +161,7 @@ defineProps({
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
+                      <img src="../../assets/img/jugo2.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>JUGO DE FRUTAS</span> <strong>10.00 Bs</strong></h3>
@@ -169,7 +169,7 @@ defineProps({
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
+                      <img src="../../assets/img/jugo3.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>GASEOSAS</span> <strong>15.00 Bs</strong></h3>
