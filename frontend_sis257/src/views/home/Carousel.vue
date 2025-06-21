@@ -102,12 +102,12 @@ function scrollToSection(sectionId: string) {
 }
 
 .carousel-img {
-  width: 50%;
+  width: 70%;
   overflow: hidden;
 }
 
 .carousel-img img {
-  width: 100%;
+  width: 150%;
   height: auto;
   object-fit: cover;
 }
