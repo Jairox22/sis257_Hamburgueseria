@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/auth/LoginView.vue'
 import HomeView from '../views/home/HomeView.vue'
-import AdminView from '../views/administracion/AdminView.vue'
 import { useAuthStore } from '@/stores'
 import { getTokenFromLocalStorage } from '@/helpers'
 
@@ -10,60 +9,69 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView
+      component: HomeView,
+      children: [
+        {
+          path: '',
+          name: 'home',
+          component: { template: '<div></div>' } // Componente vacío ya que el contenido está en MainLayout
+        },
+        // Rutas de administración como hijas del layout principal
+        {
+          path: 'admin/categorias',
+          name: 'categorias',
+          component: () => import('@/views/cruds/CategoriaView.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'admin/productos',
+          name: 'productos',
+          component: () => import('@/views/cruds/ProductoView.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'admin/empleados',
+          name: 'empleados',
+          component: () => import('@/views/cruds/EmpleadoView.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'admin/ventas',
+          name: 'ventas',
+          component: () => import('@/views/cruds/VentaView.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'admin/ventas/registrar',
+          name: 'registrar-venta',
+          component: () => import('@/views/cruds/RegistrarVentaView.vue'),
+          meta: { requiresAuth: true }
+        }
+      ]
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView
-    },
-    {
-      path: '/admin',
-      name: 'admin',
-      component: AdminView,
-      children: [  // Rutas hijas que mantendrán el NavBarAdmin
-        {
-          path: 'categorias',
-          name: 'categorias',
-          component: () => import('@/views/cruds/CategoriaView.vue')
-        },
-        {
-          path: 'productos',
-          name: 'productos',
-          component: () => import('@/views/cruds/ProductoView.vue')
-        },
-        {
-          path: 'empleados',
-          name: 'empleados',
-          component: () => import('@/views/cruds/EmpleadoView.vue')
-        },
-        {
-          path: 'ventas',
-          name: 'ventas',
-          component: () => import('@/views/cruds/VentaView.vue')
-        },
-        {
-          path: 'ventas/registrar',
-          name: 'registrar-venta',
-          // Asegúrate de que el archivo exista en la ruta correcta o corrige la ruta de importación
-          // Por ejemplo, si el archivo se llama RegistrarVenta.vue:
-          component: () => import('@/views/cruds/RegistrarVenta.vue')
-        }
-      ]
     }
   ]
 })
 
 router.beforeEach(async (to) => {
-  const publicPages = ['/login', '/']
-  const authRequired = !publicPages.includes(to.path)
   const authStore = useAuthStore()
 
-  if (authRequired && !getTokenFromLocalStorage()) {
-    if (authStore) authStore.logout()
-    authStore.returnUrl = to.fullPath
-    return '/login'
+  // Verificar si la ruta requiere autenticación
+  if (to.meta.requiresAuth) {
+    if (!getTokenFromLocalStorage()) {
+      if (authStore) authStore.logout()
+      authStore.returnUrl = to.fullPath
+      return '/login'
+    }
+  }
+
+  // Redirigir a home si ya está autenticado y trata de ir a login
+  if (to.name === 'login' && getTokenFromLocalStorage()) {
+    return '/'
   }
 })
 

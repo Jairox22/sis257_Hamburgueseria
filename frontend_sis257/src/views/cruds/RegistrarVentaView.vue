@@ -8,25 +8,25 @@ import InputNumber from 'primevue/inputnumber'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { useToast } from 'primevue/usetoast'
-import { METODOS_PAGO } from '../../constants/index'
 import type { DetalleVenta } from '@/models/venta'
 import Swal from 'sweetalert2'
 import ClienteCreate from '../../components/cliente/ClienteCreate.vue'
+import { getEmpleado } from '@/helpers'
 
 const toast = useToast()
 const router = useRouter()
 
+
 // Datos para los selects
 type Cliente = { id: number; nombres: string; apellidos?: string }
 type Empleado = { id: number; nombres: string; apellidos?: string }
-
+const pagoCliente = ref<number | null>(null)
 const clientes = ref<Cliente[]>([])
 const empleados = ref<Empleado[]>([])
 const productos = ref([])
 const categorias = ref([])
 
 // Filtros
-const categoriaSeleccionada = ref(null)
 const busquedaCliente = ref('')
 const busquedaEmpleado = ref('')
 const busquedaProducto = ref('')
@@ -55,6 +55,11 @@ const totalVenta = computed(() => {
   return detallesVenta.value.reduce((total, item) => {
     return total + (item.cantidad * item.producto.precioUnitario)
   }, 0)
+})
+
+const cambio = computed(() => {
+  if (pagoCliente.value === null) return 0
+  return Math.max(0, pagoCliente.value - totalVenta.value)
 })
 
 // Filtros computados
@@ -86,13 +91,22 @@ const productosFiltrados = computed(() => {
   return filtrados
 })
 
+const maxCantidadProducto = computed(() => {
+  if (!productoSeleccionado.value) return 1
+  const detalleExistente = detallesVenta.value.find(
+    d => d.producto.id === productoSeleccionado.value.id
+  )
+  const cantidadAgregada = detalleExistente ? detalleExistente.cantidad : 0
+  return (productoSeleccionado.value.stock || 0) - cantidadAgregada
+})
+
 // Cargar datos iniciales
 async function cargarDatos() {
   try {
     const [clientesResp, empleadosResp, productosResp, categoriasResp] = await Promise.all([
       http.get('clientes'),
       http.get('empleados'),
-      http.get('productos'),
+      http.get('productos/stock'),
       http.get('categorias')
     ])
 
@@ -101,6 +115,33 @@ async function cargarDatos() {
     productos.value = productosResp.data
     categorias.value = categoriasResp.data
     console.log('Clientes:', clientes.value)
+
+    // Obtener empleado autenticado y seleccionarlo en el formulario
+    const empleadoAuth = getEmpleado();
+    console.log('Empleado Auth:', empleadoAuth);
+    if (empleadoAuth) {
+      try {
+        const empleadoActual = await http.get(`empleados/usuario/${empleadoAuth}`);
+        console.log('Empleado Respuesta:', empleadoActual.data);
+        if (empleadoActual.data && empleadoActual.data.id) {
+          ventaForm.value.empleadoId = empleadoActual.data.id;
+        }
+      } catch (error) {
+        toast.add({
+          severity: 'warn',
+          summary: 'Advertencia',
+          detail: 'No se pudo seleccionar el empleado autenticado',
+          life: 3000
+        })
+      }
+    } else {
+      toast.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'No se pudo seleccionar el empleado autenticado',
+        life: 3000
+      })
+    }
   } catch (error) {
     toast.add({
       severity: 'error',
@@ -133,40 +174,6 @@ function nuevoClienteAgregado(nuevoCliente) {
 function abrirModalCliente() {
   mostrarModalCliente.value = true
 }
-
-// Cargar productos por categoría
-async function cargarProductosPorCategoria() {
-  try {
-    let endpoint = 'productos'
-
-    if (categoriaSeleccionada.value) {
-      endpoint = `productos/categoria/${categoriaSeleccionada.value}`
-    }
-
-    const response = await http.get(endpoint)
-    productos.value = response.data
-
-    // Resetear producto seleccionado si ya no está en la lista filtrada
-    if (productoSeleccionado.value) {
-      const existe = productos.value.some(p => p.id === productoSeleccionado.value.id)
-      if (!existe) {
-        productoSeleccionado.value = null
-      }
-    }
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudieron cargar los productos',
-      life: 3000
-    })
-  }
-}
-
-// Observar cambios en la categoría seleccionada
-watch(categoriaSeleccionada, async () => {
-  await cargarProductosPorCategoria()
-})
 
 // Agregar producto a la venta
 function agregarProducto() {
@@ -239,21 +246,21 @@ async function guardarVenta() {
     return
   }
 
-  if (!ventaForm.value.metodoPago) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Atención',
-      detail: 'Seleccione un método de pago',
-      life: 3000
-    })
-    return
-  }
-
   if (detallesVenta.value.length === 0) {
     toast.add({
       severity: 'warn',
       summary: 'Atención',
       detail: 'Agregue al menos un producto a la venta',
+      life: 3000
+    })
+    return
+  }
+
+  if (pagoCliente.value === null || pagoCliente.value < totalVenta.value) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Atención',
+      detail: 'El pago del cliente debe ser igual o mayor al total',
       life: 3000
     })
     return
@@ -265,7 +272,9 @@ async function guardarVenta() {
     const ventaData = {
       idCliente: ventaForm.value.clienteId,
       idEmpleado: ventaForm.value.empleadoId,
-      metodoPago: ventaForm.value.metodoPago,
+      metodoPago: 'efectivo',
+      montoPagado: pagoCliente.value,
+      cambio: cambio.value,
       detalles: detallesVenta.value.map(item => ({
         idProducto: item.producto.id,
         cantidad: item.cantidad
@@ -331,33 +340,19 @@ onMounted(() => {
       <div class="crud-content">
         <div class="venta-container">
           <div class="venta-form">
-            <div class="form-row">
-              <div class="form-group">
+            <div class="form-row" style="align-items: center; gap: 1.5rem;">
+              <div class="form-group" style="flex: 1.26;">
                 <label for="cliente">Cliente <span class="required">*</span></label>
-                <Select
-                  id="cliente"
-                  v-model="ventaForm.clienteId"
-                  :options="clientesFiltrados"
-                  optionLabel="nombres"
-                  optionValue="id"
-                  placeholder="Seleccione un cliente"
-                  class="w-full"
-                  :disabled="submitting"
-                  filter
-                  filterPlaceholder="Buscar cliente..."
-                >
+                <Select id="cliente" v-model="ventaForm.clienteId" :options="clientesFiltrados" optionLabel="nombres"
+                  optionValue="id" placeholder="Seleccione un cliente" class="w-full" :disabled="submitting" filter
+                  filterPlaceholder="Buscar cliente...">
                   <template #option="slotProps">
                     {{ slotProps.option.nombres }} {{ slotProps.option.apellidos || '' }}
                   </template>
                   <template #footer>
                     <div style="padding: 0.5rem; text-align: center; border-top: 1px solid #e5e7eb;">
-                      <Button
-                        label="Agregar nuevo cliente"
-                        icon="pi pi-user-plus"
-                        class="p-button-text"
-                        @click.stop="abrirModalCliente"
-                        style="width: 100%;"
-                      />
+                      <Button label="Agregar nuevo cliente" icon="pi pi-user-plus" class="p-button-text"
+                        @click.stop="abrirModalCliente" style="width: 100%;" />
                     </div>
                   </template>
                 </Select>
@@ -366,51 +361,47 @@ onMounted(() => {
               <div class="form-group">
                 <label for="empleado">Empleado <span class="required">*</span></label>
                 <Select id="empleado" v-model="ventaForm.empleadoId" :options="empleadosFiltrados" optionLabel="nombres"
-                  optionValue="id" placeholder="Seleccione un empleado" class="w-full" :disabled="submitting" filter
+                  optionValue="id" placeholder="Seleccione un empleado" class="w-full" :disabled="true" filter
                   filterPlaceholder="Buscar empleado...">
                   <template #option="slotProps">
                     {{ slotProps.option.nombres }} {{ slotProps.option.apellidos || '' }}
                   </template>
                 </Select>
               </div>
-
-              <div class="form-group">
-                <label for="metodoPago">Método de Pago <span class="required">*</span></label>
-                <Select id="metodoPago" v-model="ventaForm.metodoPago" :options="METODOS_PAGO" optionLabel="label"
-                  optionValue="value" placeholder="Seleccione método de pago" class="w-full" :disabled="submitting" />
-              </div>
             </div>
 
             <div class="products-section">
-              <div class="form-row">
-                <div class="form-group-large">
-                  <label for="categoria">Categoría</label>
-                  <Select id="categoria" v-model="categoriaSeleccionada" :options="categorias" optionLabel="nombre"
-                    optionValue="id" placeholder="Todas las categorías" class="w-full" :disabled="submitting" filter
-                    filterPlaceholder="Buscar categoría..." />
-                </div>
-
-                <div class="form-group-large">
+                <div class="form-row" style="align-items: flex-end; gap: 1.5rem;">
+                <div class="form-group-large" style="flex: 1.8;">
                   <label for="producto">Producto</label>
                   <Select id="producto" v-model="productoSeleccionado" :options="productosFiltrados"
-                    optionLabel="nombre" placeholder="Seleccione un producto" class="w-full" :disabled="submitting"
-                    filter filterPlaceholder="Buscar producto...">
-                    <template #option="slotProps">
+                  optionLabel="nombre" placeholder="Seleccione un producto" class="w-full" :disabled="submitting"
+                  filter filterPlaceholder="Buscar producto...">
+                  <template #option="slotProps">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>
                       {{ slotProps.option.nombre }} - {{ slotProps.option.precioUnitario }} Bs
-                    </template>
+                    </span>
+                    <span style="font-size: 0.8em; color: #10B981; margin-left: 8px;">
+                      Stock: {{ slotProps.option.stock }}
+                    </span>
+                    </div>
+                  </template>
                   </Select>
                 </div>
 
-                <div class="form-group-small">
+                <div class="form-group-small" style="flex: 1; min-width: 120px;">
                   <label for="cantidad">Cantidad</label>
-                  <InputNumber id="cantidad" v-model="cantidad" :min="1" :disabled="submitting" showButtons />
+                  <InputNumber id="cantidad" v-model="cantidad" :min="1" :max="maxCantidadProducto"
+                  :disabled="submitting || maxCantidadProducto <= 0" showButtons style="width: 100%;" />
                 </div>
 
-                <div class="form-group-action">
+                <div class="form-group-action" style="flex: none; padding-bottom: 0;">
                   <Button label="Agregar" icon="pi pi-plus" @click="agregarProducto"
-                    :disabled="!productoSeleccionado || cantidad <= 0 || submitting" />
+                  :disabled="!productoSeleccionado || cantidad <= 0 || cantidad > maxCantidadProducto || submitting"
+                  style="height: 48px; min-width: 140px; font-size: 1.1rem; padding: 0 2rem;" />
                 </div>
-              </div>
+                </div>
 
               <div class="products-table">
                 <DataTable :value="detallesVenta" responsiveLayout="scroll" class="p-datatable-sm">
@@ -440,17 +431,34 @@ onMounted(() => {
               </div>
 
               <div class="total-section">
-                <div class="total-label">Total:</div>
-                <div class="total-value">{{ totalVenta.toFixed(2) }} Bs</div>
+                <div class="total-label">Pago del cliente:</div>
+                <InputNumber v-model="pagoCliente" :min="totalVenta" :disabled="submitting" mode="decimal"
+                  :step="0.01" />
+              </div>
+              <div class="totals-summary">
+                <div class="totals-row">
+                  <div class="totals-item">
+                    <span class="total-label">Total:</span>
+                    <span class="total-value">{{ totalVenta.toFixed(2) }} Bs</span>
+                  </div>
+                  <div class="totals-item">
+                    <span class="total-label">Pago del cliente:</span>
+                    <span class="total-value">{{ pagoCliente !== null ? pagoCliente.toFixed(2) : '0.00' }} Bs</span>
+                  </div>
+                  <div class="totals-item">
+                    <span class="total-label">Cambio:</span>
+                    <span class="total-value">{{ cambio.toFixed(2) }} Bs</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="actions-footer">
-            <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="cancelar"
-              :disabled="submitting" />
-            <Button label="Guardar Venta" icon="pi pi-check" class="p-button-success" @click="guardarVenta"
-              :loading="submitting" />
+            <div class="actions-footer">
+              <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="cancelar"
+                :disabled="submitting" />
+              <Button label="Guardar Venta" icon="pi pi-check" class="p-button-success" @click="guardarVenta"
+                :loading="submitting" />
+            </div>
           </div>
         </div>
       </div>
@@ -458,16 +466,13 @@ onMounted(() => {
   </div>
 
   <!-- Modal de Cliente -->
-  <ClienteCreate
-    :visible="mostrarModalCliente"
-    @close="mostrarModalCliente = false"
-    @save="nuevoClienteAgregado"
-    @update:visible="mostrarModalCliente = $event"
-  />
+  <ClienteCreate :visible="mostrarModalCliente" @close="mostrarModalCliente = false" @save="nuevoClienteAgregado"
+    @update:visible="mostrarModalCliente = $event" />
 </template>
 
 <style scoped>
 .venta-container {
+  margin-top: 50px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: none;
@@ -478,7 +483,7 @@ onMounted(() => {
 .venta-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .form-row {

@@ -4,7 +4,8 @@ import type { Categorias } from '../../models/categoria'
 import http from '../../plugins/axios'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { onMounted, ref } from 'vue'
+import Dropdown from 'primevue/dropdown'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast()
@@ -17,10 +18,37 @@ const emit = defineEmits(['edit'])
 const productoDelete = ref<Productos | null>(null)
 const mostrarConfirmDialog = ref<boolean>(false)
 
+// Opciones de filas por página
+const opcionesFilas = [
+  { label: '5', value: 5 },
+  { label: '10', value: 10 },
+  { label: '20', value: 20 },
+  { label: '50', value: 50 }
+]
+const filasPorPagina = ref(5)
+const paginaActual = ref(1)
+const totalPaginas = computed(() => Math.ceil(productos.value.length / filasPorPagina.value))
+
+const productosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * filasPorPagina.value
+  return productos.value.slice(inicio, inicio + filasPorPagina.value)
+})
+
+function cambiarPagina(nuevaPagina: number) {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina
+  }
+}
+
+watch(filasPorPagina, () => {
+  paginaActual.value = 1 // Reinicia a la primera página si cambia la cantidad de filas
+})
+
 async function obtenerLista() {
   try {
     const response = await http.get(ENDPOINT)
     productos.value = response.data
+    paginaActual.value = 1 // Reinicia a la primera página al actualizar la lista
     console.log('Productos obtenidos:', productos.value)
   } catch (error) {
     toast.add({
@@ -102,8 +130,8 @@ defineExpose({ obtenerLista })
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(producto, index) in productos" :key="producto.id">
-            <td class="td-number">{{ index + 1 }}</td>
+          <tr v-for="(producto, index) in productosPaginados" :key="producto.id">
+            <td class="td-number">{{ (paginaActual - 1) * filasPorPagina + index + 1 }}</td>
             <td>{{ producto.nombre }}</td>
             <td>{{ producto.descripcion }}</td>
             <td>{{ producto.precioUnitario }} Bs</td>
@@ -120,6 +148,23 @@ defineExpose({ obtenerLista })
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Controles de paginación modernos -->
+    <div class="paginacion-moderna">
+      <div class="dropdown-filas">
+        <span>Mostrar</span>
+        <Dropdown v-model="filasPorPagina" :options="opcionesFilas" option-label="label" option-value="value"
+          class="dropdown-estilizado" />
+        <span>registros</span>
+      </div>
+      <div class="controles-paginas">
+        <Button icon="pi pi-angle-left" class="paginacion-btn" @click="cambiarPagina(paginaActual - 1)"
+          :disabled="paginaActual === 1" />
+        <span class="paginacion-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <Button icon="pi pi-angle-right" class="paginacion-btn" @click="cambiarPagina(paginaActual + 1)"
+          :disabled="paginaActual === totalPaginas || totalPaginas === 0" />
+      </div>
     </div>
 
     <Dialog v-model:visible="mostrarConfirmDialog" header="Confirmar Eliminación" :style="{ width: '25rem' }"
@@ -247,5 +292,79 @@ defineExpose({ obtenerLista })
 
 .p-button-text {
   background-color: transparent !important;
+}
+
+.paginacion-moderna {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 1.5rem 0 1rem 0;
+  background: #f4f6fb;
+  border-radius: 2rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+}
+
+.dropdown-filas {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: #2B2B2B;
+  font-weight: 500;
+}
+
+.dropdown-estilizado {
+  min-width: 80px;
+  border-radius: 1rem;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  font-size: 1rem;
+}
+
+.controles-paginas {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.paginacion-btn {
+  border-radius: 50%;
+  background: #fff;
+  color: #2B2B2B;
+  border: 1px solid #e0e0e0;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 1px 3px rgba(44, 62, 80, 0.05);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginacion-btn:enabled:hover {
+  background: #2B2B2B;
+  color: #fff;
+}
+
+.paginacion-info {
+  font-size: 1rem;
+  color: #2B2B2B;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 768px) {
+  .paginacion-moderna {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    align-items: stretch;
+  }
+  .controles-paginas {
+    justify-content: center;
+  }
 }
 </style>

@@ -26,12 +26,13 @@ async function onSubmit() {
     await authStore.login(usuario, password);
     Swal.fire({
       icon: 'success',
-      title: '¡Conexión exitosa!',
+      title: `¡Bienvenido, ${usuario}!`,
+      text: 'Has iniciado sesión correctamente.',
       confirmButtonColor: '#3085d6',
       confirmButtonText: 'Ingresar'
     }).then((result) => {
       if (result.isConfirmed) {
-        router.push('/admin/categorias');
+        router.push('/');
       }
     });
   } catch (error) {

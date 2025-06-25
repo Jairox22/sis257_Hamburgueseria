@@ -21,5 +21,10 @@ function getTokenFromLocalStorage() {
   
     return JSON.parse(jsonPayload);
   }
-  
-  export { getTokenFromLocalStorage, parseJwt };
+
+  function getEmpleado() {
+    const empleado = localStorage.getItem("idUser");
+    return empleado ? Number(empleado) : null;
+  }
+
+  export { getTokenFromLocalStorage, parseJwt, getEmpleado };

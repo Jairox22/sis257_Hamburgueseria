@@ -4,26 +4,8 @@
     :closable="true" :closeOnEscape="true" @hide="onClose" class="custom-dialog">
     <div class="form-content">
       <div class="field">
-        <label for="nombres" class="form-label">Nombres</label>
+        <label for="nombres" class="form-label">Nombre Completo</label>
         <InputText id="nombres" v-model="cliente.nombres" class="form-input" autocomplete="off" autofocus required />
-      </div>
-      <div class="field">
-        <label for="apellidos" class="form-label">Apellidos</label>
-        <InputText id="apellidos" v-model="cliente.apellidos" class="form-input" autocomplete="off" required />
-      </div>
-      <div class="field">
-        <label for="direccion" class="form-label">Dirección</label>
-        <InputText id="direccion" v-model="cliente.direccion" class="form-input" autocomplete="off" required />
-      </div>
-      <div class="field">
-        <label for="telefono" class="form-label">Teléfono</label>
-        <InputMask id="telefono" v-model="cliente.telefono" class="form-input" mask="99999999"
-          placeholder="Ej: 71234568" autocomplete="off" required />
-      </div>
-      <div class="field">
-        <label for="email" class="form-label">E-mail</label>
-        <InputText id="email" v-model="cliente.email" class="form-input" placeholder="ejemplo@gmail.com"
-          autocomplete="off" required />
       </div>
     </div>
     <template #footer>
@@ -73,11 +55,11 @@ watch(() => props.visible, v => visible.value = v)
 watch(visible, v => emit('update:visible', v))
 
 const cliente = reactive({
-  nombres: '',
-  apellidos: '',
-  direccion: '',
-  telefono: '',
-  email: ''
+  nombres: null,
+  apellidos: null,
+  direccion: null,
+  telefono: null,
+  email: null
 })
 
 watch(
@@ -86,7 +68,7 @@ watch(
     if (data) {
       Object.assign(cliente, data)
     } else {
-      Object.assign(cliente, { nombres: '', apellidos: '', direccion: '', telefono: '', email: '' })
+      Object.assign(cliente, { nombres: null, apellidos: null, direccion: null, telefono: null, email: null })
     }
   },
   { immediate: true }

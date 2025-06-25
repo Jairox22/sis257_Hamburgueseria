@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 
 const useAuthStore = defineStore("auth", {
   state: () => ({
+    idUser: localStorage.getItem("idUser") || "",
     user: localStorage.getItem("user") || "",
     token: getTokenFromLocalStorage(),
     returnUrl: null as string | null
@@ -14,9 +15,11 @@ const useAuthStore = defineStore("auth", {
   actions: {
     async login(nombreUsuario: string, clave: string) {
       await http.post("auth/login", { nombreUsuario, clave }).then(response => {
+        this.idUser = response.data.id;
         this.user = response.data.nombreUsuario;
         this.token = response.data.access_token;
 
+        localStorage.setItem("idUser", this.idUser || "");
         localStorage.setItem("user", this.user || "");
         localStorage.setItem("token", this.token || "");
 

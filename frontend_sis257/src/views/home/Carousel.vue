@@ -102,12 +102,12 @@ function scrollToSection(sectionId: string) {
 }
 
 .carousel-img {
-  width: 70%;
+  width: 50%;
   overflow: hidden;
 }
 
 .carousel-img img {
-  width: 150%;
+  width: 100%;
   height: auto;
   object-fit: cover;
 }
@@ -202,4 +202,5 @@ function scrollToSection(sectionId: string) {
   border-color: #fbaf32 !important;
   box-shadow: 0 0 10px 2px #fbaf3233;
 }
+
 </style>

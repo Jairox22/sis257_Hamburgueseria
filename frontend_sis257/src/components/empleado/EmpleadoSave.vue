@@ -134,7 +134,6 @@ async function handleSave() {
       apellidos: empleado.value.apellidos,
       cargo: empleado.value.cargo,
       fechaContratacion: empleado.value.fechaContratacion,
-      idUsuario: selectedUsuario.value?.id || 0,
     }
     if (props.modoEdicion) {
       await http.patch(`${ENDPOINT}/${empleado.value.id}`, body)
@@ -200,27 +199,14 @@ function resetForm() {
       </div>
       <div class="field">
         <label for="cargo" class="form-label">Cargo</label>
-        <Select
-          id="cargo"
-          v-model="empleado.cargo"
-          :options="CARGO_OPTIONS"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Seleccione un cargo"
-          class="form-input"
-          style="min-width: 0; width: 100%; max-width: 370px; padding: 0;"
-        />
+        <Select id="cargo" v-model="empleado.cargo" :options="CARGO_OPTIONS" optionLabel="label" optionValue="value"
+          placeholder="Seleccione un cargo" class="form-input"
+          style="min-width: 0; width: 100%; max-width: 370px; padding: 0;" />
       </div>
       <div class="field">
         <label for="fechaContratacion" class="form-label">Fecha de Contratación</label>
         <DatePicker id="fechaContratacion" v-model="empleado.fechaContratacion" class="form-input" dateFormat="yy-mm-dd"
           placeholder="aaaa-mm-dd" showIcon />
-      </div>
-      <div class="field">
-        <label for="usuario" class="form-label">Usuario</label>
-        <Select id="usuario" v-model="selectedUsuario" :options="usuariosDisponibles" optionLabel="nombreUsuario"
-          placeholder="Seleccione un usuario" class="form-input" :filter="true"
-          style="min-width: 0; width: 100%; max-width: 370px; padding: 0;" />
       </div>
     </div>
 

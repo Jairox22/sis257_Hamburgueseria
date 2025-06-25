@@ -45,7 +45,7 @@ function handleDeletedAnuladas() {
 <style scoped>
 .admin-container {
   padding: 20px;
-  margin-top: 70px;
+  margin-top: 110px;
   min-height: calc(100vh - 70px);
   background-color: #f8f9fa;
 }

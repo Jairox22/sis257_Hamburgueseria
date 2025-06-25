@@ -4,7 +4,8 @@ import type { Usuarios } from '../../models/usuario'
 import http from '../../plugins/axios'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { onMounted, ref } from 'vue'
+import Dropdown from 'primevue/dropdown'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast()
@@ -17,12 +18,58 @@ const emit = defineEmits(['edit'])
 const empleadoDelete = ref<Empleados | null>(null)
 const mostrarConfirmDialog = ref<boolean>(false)
 
+// Opciones de filas por página
+const opcionesFilas = [
+  { label: '5', value: 5 },
+  { label: '10', value: 10 },
+  { label: '20', value: 20 },
+  { label: '50', value: 50 }
+]
+const filasPorPagina = ref(5)
+const paginaActual = ref(1)
+
+// CORREGIDO: Asegurar que totalPaginas no sea 0
+const totalPaginas = computed(() => {
+  const total = Math.ceil(empleados.value.length / filasPorPagina.value)
+  return total > 0 ? total : 1
+})
+
+// CORREGIDO: Mejorar la lógica de paginación
+const empleadosPaginados = computed(() => {
+  if (!empleados.value || empleados.value.length === 0) return []
+  const inicio = (paginaActual.value - 1) * filasPorPagina.value
+  const fin = inicio + filasPorPagina.value
+  return empleados.value.slice(inicio, fin)
+})
+
+// CORREGIDO: Mejorar la función de cambio de página
+function cambiarPagina(nuevaPagina: number) {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina
+  }
+}
+
+// CORREGIDO: Watch mejorado para filasPorPagina
+watch(filasPorPagina, (nuevoValor) => {
+  console.log('Cambio en filasPorPagina:', nuevoValor)
+  paginaActual.value = 1 // Reinicia a la primera página
+}, { immediate: false })
+
+// CORREGIDO: Watch para debug de empleados
+watch(empleados, (nuevosEmpleados) => {
+  console.log('Empleados actualizados:', nuevosEmpleados.length)
+  console.log('Total páginas:', totalPaginas.value)
+}, { deep: true })
+
 async function obtenerLista() {
   try {
+    console.log('Obteniendo lista de empleados...')
     const response = await http.get(ENDPOINT)
     empleados.value = response.data
-    console.log('Empleados obtenidos:', empleados.value)
+    paginaActual.value = 1 // Reinicia a la primera página al actualizar la lista
+    console.log('Empleados obtenidos:', empleados.value.length)
   } catch (error) {
+    console.error('Error al obtener empleados:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -36,8 +83,9 @@ async function obtenerUsuarios() {
   try {
     const response = await http.get(ENDPOINT_CATEGORIAS)
     usuarios.value = response.data
-    console.log('Usuarios obtenidos:', usuarios.value)
+    console.log('Usuarios obtenidos:', usuarios.value.length)
   } catch (error) {
+    console.error('Error al obtener usuarios:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -65,8 +113,9 @@ async function eliminar() {
       detail: 'Empleado eliminado correctamente',
       life: 3000
     })
-    obtenerLista()
+    await obtenerLista() // CORREGIDO: Esperar a que se actualice la lista
   } catch (error) {
+    console.error('Error al eliminar empleado:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -78,9 +127,30 @@ async function eliminar() {
   }
 }
 
-onMounted(() => {
-  obtenerLista()
-  obtenerUsuarios()
+// CORREGIDO: Funciones de navegación específicas
+function irPrimeraPagina() {
+  paginaActual.value = 1
+}
+
+function irUltimaPagina() {
+  paginaActual.value = totalPaginas.value
+}
+
+function paginaAnterior() {
+  if (paginaActual.value > 1) {
+    paginaActual.value--
+  }
+}
+
+function paginaSiguiente() {
+  if (paginaActual.value < totalPaginas.value) {
+    paginaActual.value++
+  }
+}
+
+onMounted(async () => {
+  await obtenerLista()
+  await obtenerUsuarios()
 })
 
 defineExpose({ obtenerLista })
@@ -102,13 +172,18 @@ defineExpose({ obtenerLista })
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(empleado, index) in empleados" :key="empleado.id">
-            <td class="td-number">{{ index + 1 }}</td>
+          <tr v-if="empleadosPaginados.length === 0">
+            <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
+              No hay empleados para mostrar
+            </td>
+          </tr>
+          <tr v-for="(empleado, index) in empleadosPaginados" :key="empleado.id">
+            <td class="td-number">{{ (paginaActual - 1) * filasPorPagina + index + 1 }}</td>
             <td>{{ empleado.nombres }}</td>
             <td>{{ empleado.apellidos }}</td>
             <td>{{ empleado.cargo }}</td>
             <td>{{ empleado.fechaContratacion }}</td>
-            <td>{{ empleado.usuario.nombreUsuario }}</td>
+            <td>{{ empleado.usuario?.nombreUsuario || 'Sin usuario' }}</td>
             <td class="actions-column">
               <div class="actions-wrapper">
                 <Button icon="pi pi-pencil" aria-label="Editar" class="p-button-rounded p-button-text p-button-primary"
@@ -120,6 +195,29 @@ defineExpose({ obtenerLista })
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- CORREGIDO: Controles de paginación mejorados -->
+    <div class="paginacion-moderna">
+      <div class="dropdown-filas">
+        <span>Mostrar</span>
+        <Dropdown v-model="filasPorPagina" :options="opcionesFilas" option-label="label" option-value="value"
+          class="dropdown-estilizado" @change="console.log('Dropdown changed:', $event)" />
+        <span>registros</span>
+      </div>
+
+      <div class="controles-paginas">
+        <!-- CORREGIDO: Botones de navegación mejorados -->
+        <Button icon="pi pi-angle-left" class="paginacion-btn" @click="paginaAnterior" :disabled="paginaActual === 1"
+          title="Página anterior" />
+
+        <span class="paginacion-info">
+          Página {{ paginaActual }} de {{ totalPaginas }}
+        </span>
+
+        <Button icon="pi pi-angle-right" class="paginacion-btn" @click="paginaSiguiente"
+          :disabled="paginaActual >= totalPaginas" title="Página siguiente" />
+      </div>
     </div>
 
     <Dialog v-model:visible="mostrarConfirmDialog" header="Confirmar Eliminación" :style="{ width: '25rem' }"
@@ -191,22 +289,6 @@ defineExpose({ obtenerLista })
   font-weight: 500;
 }
 
-/* Estilos para columnas específicas */
-.empleado-table td:nth-child(3) { /* Descripción */
-  max-width: 300px;
-  white-space: normal;
-  word-wrap: break-word;
-}
-
-.empleado-table td:nth-child(4), /* Precio */
-.empleado-table td:nth-child(5) { /* Stock */
-  text-align: left;
-}
-
-.empleado-table td:nth-child(6) { /* Categoría */
-  text-transform: capitalize;
-}
-
 .actions-column {
   padding: 0.5rem !important;
 }
@@ -222,23 +304,6 @@ defineExpose({ obtenerLista })
   background-color: #f8fafc;
 }
 
-/* Estilos para pantallas pequeñas */
-@media (max-width: 768px) {
-  .table-responsive {
-    padding: 0;
-  }
-  
-  .empleado-table th, 
-  .empleado-table td {
-    padding: 0.5rem;
-    font-size: 0.85rem;
-  }
-  
-  .empleado-table td:nth-child(3) {
-    max-width: 200px;
-  }
-}
-
 /* Estilos para los botones de acción */
 .p-button-rounded {
   width: 2rem;
@@ -247,5 +312,98 @@ defineExpose({ obtenerLista })
 
 .p-button-text {
   background-color: transparent !important;
+}
+
+/* Paginación moderna */
+.paginacion-moderna {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 1.5rem 0 1rem 0;
+  background: #f4f6fb;
+  border-radius: 2rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+}
+
+.dropdown-filas {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: #2B2B2B;
+  font-weight: 500;
+}
+
+.dropdown-estilizado {
+  min-width: 80px;
+  border-radius: 1rem;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  font-size: 1rem;
+}
+
+.controles-paginas {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paginacion-btn {
+  border-radius: 50%;
+  background: #fff;
+  color: #2B2B2B;
+  border: 1px solid #e0e0e0;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 1px 3px rgba(44, 62, 80, 0.05);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginacion-btn:enabled:hover {
+  background: #2B2B2B;
+  color: #fff;
+}
+
+.paginacion-info {
+  font-size: 1rem;
+  color: #2B2B2B;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin: 0 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .empleado-container {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .empleado-table th,
+  .empleado-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .paginacion-moderna {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: stretch;
+  }
+
+  .controles-paginas {
+    justify-content: center;
+  }
+
+  .dropdown-filas {
+    justify-content: center;
+  }
 }
 </style>
