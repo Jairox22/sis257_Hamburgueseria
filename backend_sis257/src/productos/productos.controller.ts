@@ -19,7 +19,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('productos')
 export class ProductosController {
-  constructor(private readonly productosService: ProductosService) {}
+  constructor(private readonly productosService: ProductosService) { }
 
   @Post()
   create(@Body() createProductoDto: CreateProductoDto) {
@@ -29,6 +29,11 @@ export class ProductosController {
   @Get()
   findAll() {
     return this.productosService.findAll();
+  }
+
+  @Get('stock')
+  findWithStock() {
+    return this.productosService.findWithStock();
   }
 
   @Get(':id')

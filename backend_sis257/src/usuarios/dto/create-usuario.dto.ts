@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-// eslint-disable-next-line no-unused-vars
   IsEmail,
   IsNotEmpty,
   IsString,

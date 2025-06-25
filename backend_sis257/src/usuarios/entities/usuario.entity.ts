@@ -4,6 +4,7 @@ import {
   BeforeUpdate,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -27,6 +28,9 @@ export class Usuario {
 
   @UpdateDateColumn({ name: 'fecha_modificacion' })
   fechaModificacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
 
   //un usuario puede pertenecer a un solo empleado
   @OneToOne(() => Empleado, (empleado) => empleado.usuario)

@@ -3,6 +3,7 @@ import { DetalleVenta } from 'src/ventas/entities/detalle_venta.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -33,6 +34,9 @@ export class Producto {
 
   @UpdateDateColumn({ name: 'fecha_modificacion' })
   fechaModificacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
 
   //varios productos pertenecen a Una categoría
   @ManyToOne(() => Categoria, (categoria) => categoria.productos)

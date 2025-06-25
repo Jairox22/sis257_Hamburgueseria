@@ -2,6 +2,7 @@ import { Producto } from 'src/productos/entities/producto.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -20,6 +21,9 @@ export class Categoria {
 
   @UpdateDateColumn({ name: 'fecha_modificacion' })
   fechaModificacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
 
   //Una categoría puede tener varios productos
   @OneToMany(() => Producto, (producto) => producto.categoria)

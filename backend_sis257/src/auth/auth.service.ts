@@ -37,7 +37,7 @@ export class AuthService {
       usuario = await this.usuarioService.findOne(payload.sub);
     } catch (error) {
       throw new UnauthorizedException(`Usuario inválido: ${payload.sub}`);
-    }
+    }     
 
     return usuario;
   }

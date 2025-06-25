@@ -34,6 +34,13 @@ export class VentasController {
     return this.ventasService.obtenerVentaPorId(id);
   }
 
+  @Get(':id/detalles')
+  @ApiResponse({ status: 200, description: 'Detalles de una venta específica' })
+  @ApiResponse({ status: 404, description: 'Detalles no encontrados' })
+  async obtenerVentaDetalles(@Param('id') id: number){
+    return this.ventasService.obtenerVentaDetalles(id);
+  }
+
   @Post()
   @ApiResponse({ status: 201, description: 'Venta creada exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos o error de stock' })

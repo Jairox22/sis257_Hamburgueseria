@@ -64,6 +64,25 @@ export class VentasService {
     return venta;
   }
 
+  async obtenerVentaDetalles(id: number): Promise<DetalleVenta[]> {
+    const venta = await this.ventaRepository.findOne({
+      where: { id },
+      relations: ['ventadetalles', 'ventadetalles.producto'],
+    });
+
+    if (!venta) {
+      throw new NotFoundException(`La venta con ID ${id} no fue encontrada`);
+    }
+
+    if (!venta.ventadetalles || venta.ventadetalles.length === 0) {
+      throw new NotFoundException(
+        `No se encontraron detalles para la venta con ID ${id}`,
+      );
+    }
+
+    return venta.ventadetalles;
+  }
+
   async crearVenta(createVentaDto: CreateVentaDto): Promise<Venta> {
     console.log('Iniciando creación de venta con DTO:', createVentaDto);
     const queryRunner = this.dataSource.createQueryRunner();
@@ -102,10 +121,21 @@ export class VentasService {
       }
       console.log('Empleado encontrado:', empleado);
 
+      // Validar montoPagado en el DTO
+      if (
+        typeof createVentaDto.montoPagado !== 'number' ||
+        isNaN(createVentaDto.montoPagado) ||
+        createVentaDto.montoPagado < 0
+      ) {
+        throw new BadRequestException('El monto pagado debe ser un número positivo');
+      }
+
       const nuevaVenta = this.ventaRepository.create({
-        metodoPago: createVentaDto.metodoPago,
+        metodoPago: 'efectivo',
         totalVenta: 0,
         estado: 'realizada',
+        montoPagado: 0, // Se actualizará después de calcular el total
+        cambio: 0,      // Se actualizará después de calcular el total
       });
 
       if (cliente) {
@@ -189,9 +219,24 @@ export class VentasService {
         );
       }
 
+      // Calcular cambio
+      const montoPagado = Number(createVentaDto.montoPagado);
+      if (montoPagado < totalVenta) {
+        throw new BadRequestException(
+          `El monto pagado (${montoPagado}) es menor al total de la venta (${totalVenta})`,
+        );
+      }
+      const cambio = Number((montoPagado - totalVenta).toFixed(2));
+
       ventaGuardada.totalVenta = totalVenta;
+      ventaGuardada.montoPagado = montoPagado;
+      ventaGuardada.cambio = cambio;
       await queryRunner.manager.save(ventaGuardada);
-      console.log('Total de la venta actualizado:', totalVenta);
+      console.log('Total de la venta, monto pagado y cambio actualizados:', {
+        totalVenta,
+        montoPagado,
+        cambio,
+      });
 
       await queryRunner.commitTransaction();
       console.log('Transacción confirmada. Venta creada exitosamente.');
@@ -238,6 +283,8 @@ export class VentasService {
         throw new BadRequestException(`La venta con ID ${id} ya está anulada`);
       }
 
+      const fechaAnulacion = new Date();
+
       console.log('Restaurando stock de productos de la venta...');
       for (const detalle of venta.ventadetalles) {
         const producto = await this.productoRepository.findOne({
@@ -262,12 +309,17 @@ export class VentasService {
             `Producto con ID ${detalle.producto.id} no encontrado al restaurar stock`,
           );
         }
+
+        // Actualizar fechaAnulacion en el detalle
+        detalle.fechaAnulacion = fechaAnulacion;
+        await queryRunner.manager.save(detalle);
       }
 
       venta.estado = 'anulada';
       venta.totalVenta = 0;
+      venta.fechaAnulacion = fechaAnulacion;
       await queryRunner.manager.save(venta);
-      console.log('Venta marcada como anulada y totalVenta puesto en 0');
+      console.log('Venta marcada como anulada, totalVenta puesto en 0 y fechaAnulacion actualizada');
 
       await queryRunner.commitTransaction();
       console.log('Transacción de anulación confirmada.');
@@ -292,41 +344,47 @@ export class VentasService {
     }
   }
 
-  async limpiarVentasAnuladas(): Promise<{ cantidadRegistrosEliminados: number; mensaje?: string }> {
+  async limpiarVentasAnuladas(): Promise<{
+    cantidadRegistrosEliminados: number;
+    mensaje?: string;
+  }> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Buscar IDs de ventas anuladas
+      // Buscar ventas anuladas
       const ventasAnuladas = await this.ventaRepository.find({
         where: { estado: 'anulada' },
-        select: ['id'],
-      });
-      const idsAnuladas = ventasAnuladas.map((v) => v.id);
-
-      if (idsAnuladas.length > 0) {
-        // Eliminar detalles asociados a esas ventas
-        await queryRunner.manager.delete(DetalleVenta, {
-          venta: { id: In(idsAnuladas) },
-        });
-      }
-
-      // Eliminar las ventas anuladas
-      const result = await queryRunner.manager.delete(Venta, {
-        estado: 'anulada',
+        relations: ['ventadetalles'],
       });
 
-      await queryRunner.commitTransaction();
-
-      if (!result.affected || result.affected === 0) {
+      if (ventasAnuladas.length === 0) {
         return {
           cantidadRegistrosEliminados: 0,
           mensaje: 'No se encontraron ventas anuladas para eliminar.',
         };
       }
 
-      return { cantidadRegistrosEliminados: result.affected };
+      // Soft-remove detalles de cada venta anulada
+      let detallesEliminados = 0;
+      for (const venta of ventasAnuladas) {
+        if (venta.ventadetalles && venta.ventadetalles.length > 0) {
+          for (const detalle of venta.ventadetalles) {
+            await queryRunner.manager.softRemove(DetalleVenta, detalle);
+            detallesEliminados++;
+          }
+        }
+        // Soft-remove la venta anulada
+        await queryRunner.manager.softRemove(Venta, venta);
+      }
+
+      await queryRunner.commitTransaction();
+
+      return {
+        cantidadRegistrosEliminados: ventasAnuladas.length,
+        mensaje: `Ventas anuladas eliminadas (soft): ${ventasAnuladas.length}, detalles eliminados (soft): ${detallesEliminados}`,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(

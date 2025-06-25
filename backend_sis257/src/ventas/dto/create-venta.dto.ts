@@ -47,13 +47,23 @@ export class CreateVentaDto {
   @Type(() => DetalleVentaDto)
   detalles: DetalleVentaDto[];
 
-  @ApiProperty({ 
-    description: 'Tipo de documento', 
-    example: 'VEN', 
-    enum: ['VEN', 'FAC'],
-    required: false 
+  @ApiProperty({
+    description: 'Monto pagado por el cliente',
+    example: 100.00,
+    type: Number,
+    default: 0,
   })
-  @IsString({ message: 'El tipo de documento debe ser una cadena de texto' })
-  @IsOptional()
-  tipoDocumento?: string;
+  @IsNumber({}, { message: 'El monto pagado debe ser un número' })
+  @Min(0, { message: 'El monto pagado no puede ser negativo' })
+  montoPagado: number;
+
+  @ApiProperty({
+    description: 'Cambio entregado al cliente',
+    example: 5.00,
+    type: Number,
+    default: 0,
+  })
+  @IsNumber({}, { message: 'El cambio debe ser un número' })
+  @Min(0, { message: 'El cambio no puede ser negativo' })
+  cambio: number;
 }

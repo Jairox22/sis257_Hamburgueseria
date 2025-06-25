@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
 @Entity('detalle_ventas')
@@ -25,6 +26,12 @@ export class DetalleVenta {
 
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
+
+  @Column({ name: 'fecha_anulacion', type: 'timestamp', nullable: true })
+  fechaAnulacion: Date | null;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
 
   //varios ventaDetalle pueden tener una venta (M a 1)
   @ManyToOne(() => Venta, (venta) => venta.ventadetalles)

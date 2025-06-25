@@ -9,6 +9,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
 @Entity('ventas')
@@ -28,7 +29,6 @@ export class Venta {
   })
   metodoPago: string;
 
-
   @Column({
     type: 'varchar',
     length: 20,
@@ -39,6 +39,18 @@ export class Venta {
 
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
+
+  @Column({ name: 'fecha_anulacion', type: 'timestamp', nullable: true })
+  fechaAnulacion: Date | null;
+
+  @Column({ name: 'monto_pagado', type: 'numeric', precision: 10, scale: 2, default: 0 })
+  montoPagado: number;
+
+  @Column({ name: 'cambio', type: 'numeric', precision: 10, scale: 2, default: 0 })
+  cambio: number;
 
   //  muchas ventas puede realizar  un cliente
   @ManyToOne(() => Cliente, (cliente) => cliente.ventas)

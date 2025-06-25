@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
+  NotFoundException,
 } from '@nestjs/common';
 import { EmpleadosService } from './empleados.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
@@ -18,7 +20,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 @ApiTags('Empleados')
 @Controller('empleados')
 export class EmpleadosController {
-  constructor(private readonly empleadosService: EmpleadosService) {}
+  constructor(private readonly empleadosService: EmpleadosService) { }
 
   @Post()
   create(@Body() createEmpleadoDto: CreateEmpleadoDto) {
@@ -33,6 +35,11 @@ export class EmpleadosController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.empleadosService.findOne(+id);
+  }
+
+  @Get('usuario/:usuarioId')
+  getEmpleadoByUsuarioId(@Param('usuarioId') usuarioId: number) {
+    return this.empleadosService.findByUsuarioId(usuarioId);
   }
 
   @Patch(':id')

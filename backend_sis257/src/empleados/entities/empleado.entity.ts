@@ -3,6 +3,7 @@ import { Venta } from 'src/ventas/entities/venta.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
@@ -33,6 +34,9 @@ export class Empleado {
 
   @UpdateDateColumn({ name: 'fecha_modificacion' })
   fechaModificacion: Date;
+
+  @DeleteDateColumn({ name: 'fecha_eliminacion' })
+  fechaEliminacion: Date;
 
   //un empleado puede tener un usuario
   @OneToOne(() => Usuario, (usuario) => usuario.empleados)

@@ -41,11 +41,7 @@ export class CreateEmpleadoDto {
   readonly cargo: string;
 
   @ApiProperty({ example: '2024-04-13' })
-  @IsNotEmpty({ message: 'El campo fechaLanzamiento no debe ser vacío' })
-  @IsDateString(
-    {},
-    { message: 'El campo fechaLanzamiento debe ser de tipo fecha' },
-  )
+  @IsNotEmpty({ message: 'El campo fecha de Contratación no debe ser vacío' })
   readonly fechaContratacion: Date;
 
   @CreateDateColumn({ name: 'fecha_creacion' })
@@ -53,9 +49,4 @@ export class CreateEmpleadoDto {
 
   @UpdateDateColumn({ name: 'fecha_modificacion' })
   fechaModificacion: Date;
-
-  @ApiProperty({ example: 1 })
-  @IsDefined({ message: 'El campo idUsuario debe estar definido' })
-  @IsNumber({}, { message: 'El campo idUsuario debe ser de tipo numérico' })
-  readonly idUsuario: number;
 }

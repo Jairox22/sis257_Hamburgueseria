@@ -15,7 +15,6 @@ async function bootstrap() {
     .setTitle('API Rest HAMBURGUESERIA')
     .setDescription('API Rest de la materia Desarrollo de App Int/Internet II')
     .setVersion('1.0')
-    // .addTag('clientes')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',

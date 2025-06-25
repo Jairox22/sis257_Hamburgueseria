@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { Producto } from './entities/producto.entity';
 import { Categoria } from 'src/categorias/entities/categoria.entity';
 import { CreateProductoDto } from './dto/create-producto.dto';
@@ -51,6 +51,13 @@ export class ProductosService {
     return this.productosRepository.find({ relations: ['categoria'] });
   }
 
+  async findWithStock(): Promise<Producto[]> {
+    return this.productosRepository.find({
+      where: { stock: MoreThan(0) },
+      relations: ['categoria'],
+    });
+  }
+
   async findOne(id: number): Promise<Producto> {
     const producto = await this.productosRepository.findOne({
       where: { id },
@@ -64,7 +71,10 @@ export class ProductosService {
 
   async findByCategoria(categoriaId: number): Promise<Producto[]> {
     return this.productosRepository.find({
-      where: { categoria: { id: categoriaId } },
+      where: {
+        categoria: { id: categoriaId },
+        stock: MoreThan(0),
+      },
       relations: ['categoria'],
     });
   }
@@ -113,7 +123,7 @@ export class ProductosService {
 
   async remove(id: number) {
     const producto = await this.findOne(id);
-    await this.productosRepository.delete(producto.id);
+    await this.productosRepository.softRemove(producto);
     return {
       message: 'Producto eliminado exitosamente',
       producto,
