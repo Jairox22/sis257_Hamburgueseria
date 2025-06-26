@@ -34,38 +34,38 @@ defineProps({
                 <div class="col-lg-7 col-md-12">
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-burger.jpg" alt="Imagen">
+                      <img src="../../assets/img/burguer1.jpeg" alt="Imagen">
                     </div>
                     <div class="menu-text">
-                      <h3><span>Mini Hamburguesa con Queso</span> <strong>11.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <h3><span>BENDITA</span> <strong>20.00 Bs</strong></h3>
+                      <p>Pan especial, carne seleccionada, queso cheddar, jamon, ensalada y salsas especiales</p>
                     </div>
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-burger.jpg" alt="Imagen">
+                      <img src="../../assets/img/diabla.jpeg" alt="Imagen">
                     </div>
                     <div class="menu-text">
-                      <h3><span>Hamburguesa Doble</span> <strong>13.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <h3><span>DIABLA</span> <strong>28.00 Bs</strong></h3>
+                      <p>Pan espsecial, doble carne, doble queso chaddar, chorizo parrillero y tocino</p>
                     </div>
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-burger.jpg" alt="Imagen">
+                      <img src="../../assets/img/gorgory.jpeg" alt="Imagen">
                     </div>
                     <div class="menu-text">
-                      <h3><span>Bacon, Huevo y Queso</span> <strong>15.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <h3><span>GORGORY</span> <strong>29.00 Bs</strong></h3>
+                      <p>Donut glaseada, carne seleccionada, queso cheddar, doble tocino ahumado, salsas especiales y porcion de papas fritas</p>
                     </div>
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-burger.jpg" alt="Imagen">
+                      <img src="../../assets/img/carnivora.jpeg" alt="Imagen">
                     </div>
                     <div class="menu-text">
-                      <h3><span>Hamburguesa de Cerdo Desmenuzado</span> <strong>20.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <h3><span>CARNIVORA</span> <strong>24.00 Bs</strong></h3>
+                      <p>Pan especial, carne mix, queso cheddar, tocino, doble jamon, ensalada y salsas especiales</p>
                     </div>
                   </div>
                   <div class="menu-item">
@@ -74,7 +74,7 @@ defineProps({
                     </div>
                     <div class="menu-text">
                       <h3><span>Hamburguesa de Pollo Frito</span> <strong>25.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <p>Pan especial, pollo frito, lechuga, tomate y mayonesa</p>
                     </div>
                   </div>
                 </div>
@@ -92,16 +92,14 @@ defineProps({
                     </div>
                     <div class="menu-text">
                       <h3><span>Corn Tikki - Aloo Picante Frito</span> <strong>18.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
                     </div>
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-snack.jpg" alt="Imagen">
+                      <img src="../../assets/img/pan.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>Pan Tostado con Besan</span> <strong>38.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
                     </div>
                   </div>
                   <div class="menu-item">
@@ -110,25 +108,22 @@ defineProps({
                     </div>
                     <div class="menu-text">
                       <h3><span>Snacks Saludables de Soya</span> <strong>23.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
                     </div>
                   </div>
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-snack.jpg" alt="Imagen">
+                      <img src="../../assets/img/soya.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>Trozos de Soya Tandoori</span> <strong>33.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
                     </div>
                   </div>
                     <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-snack.jpg" alt="Imagen">
+                      <img src="../../assets/img/snack1.jpg" alt="Imagen">
                     </div>
                     <div class="menu-text">
                       <h3><span>Papas Fritas con Queso</span> <strong>33.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
                     </div>
                     </div>
                 </div>
@@ -142,11 +137,34 @@ defineProps({
                 <div class="col-lg-7 col-md-12">
                   <div class="menu-item">
                     <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
+                      <img src="../../assets/img/jugo1.png" alt="Imagen">
                     </div>
                     <div class="menu-text">
-                      <h3><span>Taza Individual de Café</span> <strong>9.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <h3><span>Limonada</span> <strong>9.00 Bs</strong></h3>
+                    </div>
+                  </div>
+                  <div class="menu-item">
+                    <div class="menu-img">
+                      <img src="../../assets/img/jugo2.png" alt="Imagen">
+                    </div>
+                    <div class="menu-text">
+                      <h3><span>Jugo de frutas</span> <strong>15.00 Bs</strong></h3>
+                    </div>
+                  </div>
+                  <div class="menu-item">
+                    <div class="menu-img">
+                      <img src="../../assets/img/jugo3.png" alt="Imagen">
+                    </div>
+                    <div class="menu-text">
+                      <h3><span>Gaseosa</span> <strong>18.00 Bs</strong></h3>
+                    </div>
+                  </div>
+                  <div class="menu-item">
+                    <div class="menu-img">
+                      <img src="../../assets/img/jugo4.png" alt="Imagen">
+                    </div>
+                    <div class="menu-text">
+                      <h3><span>Jugo del valle</span> <strong>15.00 Bs</strong></h3>
                     </div>
                   </div>
                   <div class="menu-item">
@@ -154,35 +172,7 @@ defineProps({
                       <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
                     </div>
                     <div class="menu-text">
-                      <h3><span>Café Americano</span> <strong>11.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
-                    </div>
-                  </div>
-                  <div class="menu-item">
-                    <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
-                    </div>
-                    <div class="menu-text">
-                      <h3><span>Caramel Macchiato</span> <strong>18.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
-                    </div>
-                  </div>
-                  <div class="menu-item">
-                    <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
-                    </div>
-                    <div class="menu-text">
-                      <h3><span>Café Negro Estándar</span> <strong>10.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
-                    </div>
-                  </div>
-                  <div class="menu-item">
-                    <div class="menu-img">
-                      <img src="../../assets/img/menu-beverage.jpg" alt="Imagen">
-                    </div>
-                    <div class="menu-text">
-                      <h3><span>Café Negro Estándar</span> <strong>14.00 Bs</strong></h3>
-                      <p>Lorem ipsum dolor sit amet elit. Phasel nec preti facil</p>
+                      <h3><span>Coctel</span> <strong>20.00 Bs</strong></h3>
                     </div>
                   </div>
                 </div>
