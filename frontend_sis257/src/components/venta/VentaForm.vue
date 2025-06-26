@@ -10,6 +10,7 @@ import Column from 'primevue/column'
 import { useToast } from 'primevue/usetoast'
 import { METODOS_PAGO } from '../../constants/index'
 import type { DetalleVenta } from '@/models/venta'
+import type { Productos } from '@/models/producto'
 
 const toast = useToast()
 const props = defineProps({
@@ -28,7 +29,7 @@ const emit = defineEmits(['close', 'save', 'update:visible'])
 // Datos para los selects
 const clientes = ref([])
 const empleados = ref([])
-const productos = ref([])
+const productos = ref<Productos[]>([])
 
 // Formulario de venta
 const ventaForm = ref({
@@ -39,7 +40,7 @@ const ventaForm = ref({
 })
 
 // Producto seleccionado para agregar
-const productoSeleccionado = ref(null)
+const productoSeleccionado = ref<Productos | null>(null)
 const cantidad = ref(1)
 
 // Tabla de productos seleccionados
@@ -99,7 +100,7 @@ function agregarProducto() {
 
     // Verificar si el producto ya está en la lista
     const productoIndex = detallesVenta.value.findIndex(
-        item => item.producto.id === productoSeleccionado.value.id
+        item => item.producto.id === productoSeleccionado.value!.id
     )
 
     if (productoIndex >= 0) {
@@ -108,7 +109,11 @@ function agregarProducto() {
     } else {
         // Agregar nuevo producto
         detallesVenta.value.push({
-            producto: productoSeleccionado.value,
+            producto: {
+                id: productoSeleccionado.value.id!,
+                nombre: productoSeleccionado.value.nombre,
+                precio: productoSeleccionado.value.precioUnitario
+            },
             cantidad: cantidad.value,
             precioUnitario: productoSeleccionado.value.precioUnitario
         })

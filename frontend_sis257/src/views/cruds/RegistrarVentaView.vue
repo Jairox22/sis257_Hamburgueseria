@@ -9,6 +9,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { useToast } from 'primevue/usetoast'
 import type { DetalleVenta } from '@/models/venta'
+import type { Productos } from '@/models/producto'
 import Swal from 'sweetalert2'
 import ClienteCreate from '../../components/cliente/ClienteCreate.vue'
 import { getEmpleado } from '@/helpers'
@@ -23,7 +24,7 @@ type Empleado = { id: number; nombres: string; apellidos?: string }
 const pagoCliente = ref<number | null>(null)
 const clientes = ref<Cliente[]>([])
 const empleados = ref<Empleado[]>([])
-const productos = ref([])
+const productos = ref<Productos[]>([])
 const categorias = ref([])
 
 // Filtros
@@ -36,14 +37,14 @@ const mostrarModalCliente = ref(false)
 
 // Formulario de venta
 const ventaForm = ref({
-  clienteId: null,
-  empleadoId: null,
+  clienteId: null as number | null,
+  empleadoId: null as number | null,
   metodoPago: null,
   detalles: []
 })
 
 // Producto seleccionado para agregar
-const productoSeleccionado = ref(null)
+const productoSeleccionado = ref<Productos | null>(null)
 const cantidad = ref(1)
 
 // Tabla de productos seleccionados
@@ -53,7 +54,7 @@ const submitting = ref(false)
 // Total de la venta
 const totalVenta = computed(() => {
   return detallesVenta.value.reduce((total, item) => {
-    return total + (item.cantidad * item.producto.precioUnitario)
+    return total + (item.cantidad * item.producto.precio)
   }, 0)
 })
 
@@ -94,7 +95,7 @@ const productosFiltrados = computed(() => {
 const maxCantidadProducto = computed(() => {
   if (!productoSeleccionado.value) return 1
   const detalleExistente = detallesVenta.value.find(
-    d => d.producto.id === productoSeleccionado.value.id
+    d => d.producto.id === productoSeleccionado.value!.id
   )
   const cantidadAgregada = detalleExistente ? detalleExistente.cantidad : 0
   return (productoSeleccionado.value.stock || 0) - cantidadAgregada
@@ -153,7 +154,7 @@ async function cargarDatos() {
 }
 
 // Manejar cuando se agrega un nuevo cliente
-function nuevoClienteAgregado(nuevoCliente) {
+function nuevoClienteAgregado(_nuevoCliente: any) {
   // Volver a cargar la lista de clientes desde el backend
   http.get('clientes').then(resp => {
     clientes.value = resp.data
@@ -199,7 +200,7 @@ function agregarProducto() {
 
   // Verificar si el producto ya está en la lista
   const productoIndex = detallesVenta.value.findIndex(
-    item => item.producto.id === productoSeleccionado.value.id
+    item => item.producto.id === productoSeleccionado.value!.id
   )
 
   if (productoIndex >= 0) {
@@ -208,7 +209,11 @@ function agregarProducto() {
   } else {
     // Agregar nuevo producto
     detallesVenta.value.push({
-      producto: productoSeleccionado.value,
+      producto: {
+        id: productoSeleccionado.value.id!,
+        nombre: productoSeleccionado.value.nombre,
+        precio: productoSeleccionado.value.precioUnitario
+      },
       cantidad: cantidad.value,
       precioUnitario: productoSeleccionado.value.precioUnitario
     })
@@ -411,14 +416,14 @@ onMounted(() => {
                     </template>
                   </Column>
                   <Column field="cantidad" header="Cantidad" />
-                  <Column field="producto.precioUnitario" header="Precio Unitario">
+                  <Column field="producto.precio" header="Precio Unitario">
                     <template #body="slotProps">
-                      {{ slotProps.data.producto.precioUnitario }} Bs
+                      {{ slotProps.data.producto.precio }} Bs
                     </template>
                   </Column>
                   <Column field="subtotal" header="Subtotal">
                     <template #body="slotProps">
-                      {{ (slotProps.data.cantidad * slotProps.data.producto.precioUnitario).toFixed(2) }} Bs
+                      {{ (slotProps.data.cantidad * slotProps.data.producto.precio).toFixed(2) }} Bs
                     </template>
                   </Column>
                   <Column header="Acciones" style="width:100px">
@@ -579,6 +584,27 @@ onMounted(() => {
   font-size: 1.2rem;
   font-weight: bold;
   color: #FBAF32;
+}
+
+.totals-summary {
+  margin-top: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.totals-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.totals-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
 }
 
 .actions-footer {

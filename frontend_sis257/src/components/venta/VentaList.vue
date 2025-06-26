@@ -141,7 +141,7 @@ defineExpose({ obtenerLista })
             </td>
             <td>{{ venta.metodoPago }}</td>
             <td>
-              <span v-if="venta.totalVenta === '0.00'">Anulada</span>
+              <span v-if="parseFloat(venta.totalVenta.toString()) === 0">Anulada</span>
               <span v-else>{{ venta.totalVenta }} Bs</span>
             </td>
             <td>

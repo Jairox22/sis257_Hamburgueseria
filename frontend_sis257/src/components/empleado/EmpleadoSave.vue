@@ -97,7 +97,7 @@ async function obtenerUsuariosYEmpleados() {
     const empleados = responseEmpleados.data
 
     // IDs de usuarios ya asignados
-    const usuariosAsignados = empleados.map(emp => emp.usuario?.id).filter(id => id > 0)
+    const usuariosAsignados = empleados.map((emp: any) => emp.usuario?.id).filter((id: any) => id > 0)
 
     // Filtrar usuarios no asignados + el usuario actual
     usuariosDisponibles.value = usuarios.value.filter(usuario => {
